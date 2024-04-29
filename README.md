@@ -9,10 +9,15 @@
 - jfreechart: https://github.com/jfree/jfreechart.git
 
 ### Filters used to extract classes
+We exclude trivial classes and those having extremely long method lengths from these filters.
 
-- **Total number of lines of code**: [50,150]
-- **Number of internal imports**: 0
+- **Total number of lines of code**: [50,inf)
 - **Average length of methods**: [3,20]
-- **Average line length**: from this data we have chosen the best ones (those with the lowest number)
 
 The collected data was extracted using cloc(https://github.com/AlDanial/cloc.git) and custom functions.
+
+### Ranking selection
+
+From the classes resulting from the filters, these are sorted to form a ranking, the records are sorted according to the following factors: Internal Import, Lines of Code.
+
+The first **six classes** (fewer in number if the project has a few) considered **core** will be selected for the study.
