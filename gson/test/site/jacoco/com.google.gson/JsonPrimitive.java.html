@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonPrimitive.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Gson</a> &gt; <a href="index.source.html" class="el_package">com.google.gson</a> &gt; <span class="el_source">JsonPrimitive.java</span></div><h1>JsonPrimitive.java</h1><pre class="source lang-java linenums">/*
+ * Copyright (C) 2008 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.google.gson;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import com.google.gson.internal.$Gson$Preconditions;
+import com.google.gson.internal.LazilyParsedNumber;
+
+/**
+ * A class representing a Json primitive value. A primitive value
+ * is either a String, a Java primitive, or a Java primitive
+ * wrapper type.
+ *
+ * @author Inderjeet Singh
+ * @author Joel Leitch
+ */
+public final class JsonPrimitive extends JsonElement {
+
+<span class="fc" id="L35">  private static final Class&lt;?&gt;[] PRIMITIVE_TYPES = { int.class, long.class, short.class,</span>
+      float.class, double.class, byte.class, boolean.class, char.class, Integer.class, Long.class,
+      Short.class, Float.class, Double.class, Byte.class, Boolean.class, Character.class };
+
+  private Object value;
+
+  /**
+   * Create a primitive containing a boolean value.
+   *
+   * @param bool the value to create the primitive with.
+   */
+<span class="fc" id="L46">  public JsonPrimitive(Boolean bool) {</span>
+<span class="fc" id="L47">    setValue(bool);</span>
+<span class="fc" id="L48">  }</span>
+
+  /**
+   * Create a primitive containing a {@link Number}.
+   *
+   * @param number the value to create the primitive with.
+   */
+<span class="fc" id="L55">  public JsonPrimitive(Number number) {</span>
+<span class="fc" id="L56">    setValue(number);</span>
+<span class="fc" id="L57">  }</span>
+
+  /**
+   * Create a primitive containing a String value.
+   *
+   * @param string the value to create the primitive with.
+   */
+<span class="fc" id="L64">  public JsonPrimitive(String string) {</span>
+<span class="fc" id="L65">    setValue(string);</span>
+<span class="fc" id="L66">  }</span>
+
+  /**
+   * Create a primitive containing a character. The character is turned into a one character String
+   * since Json only supports String.
+   *
+   * @param c the value to create the primitive with.
+   */
+<span class="fc" id="L74">  public JsonPrimitive(Character c) {</span>
+<span class="fc" id="L75">    setValue(c);</span>
+<span class="fc" id="L76">  }</span>
+
+  /**
+   * Create a primitive using the specified Object. It must be an instance of {@link Number}, a
+   * Java primitive type, or a String.
+   *
+   * @param primitive the value to create the primitive with.
+   */
+<span class="fc" id="L84">  JsonPrimitive(Object primitive) {</span>
+<span class="fc" id="L85">    setValue(primitive);</span>
+<span class="fc" id="L86">  }</span>
+
+  /**
+   * Returns the same value as primitives are immutable.
+   * @since 2.8.2
+   */
+  @Override
+  public JsonPrimitive deepCopy() {
+<span class="fc" id="L94">    return this;</span>
+  }
+
+  void setValue(Object primitive) {
+<span class="fc bfc" id="L98" title="All 2 branches covered.">    if (primitive instanceof Character) {</span>
+      // convert characters to strings since in JSON, characters are represented as a single
+      // character string
+<span class="fc" id="L101">      char c = ((Character) primitive).charValue();</span>
+<span class="fc" id="L102">      this.value = String.valueOf(c);</span>
+<span class="fc" id="L103">    } else {</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">      $Gson$Preconditions.checkArgument(primitive instanceof Number</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">              || isPrimitiveOrString(primitive));</span>
+<span class="fc" id="L106">      this.value = primitive;</span>
+    }
+<span class="fc" id="L108">  }</span>
+
+  /**
+   * Check whether this primitive contains a boolean value.
+   *
+   * @return true if this primitive contains a boolean value, false otherwise.
+   */
+  public boolean isBoolean() {
+<span class="fc" id="L116">    return value instanceof Boolean;</span>
+  }
+
+  /**
+   * convenience method to get this element as a {@link Boolean}.
+   *
+   * @return get this element as a {@link Boolean}.
+   */
+  @Override
+  Boolean getAsBooleanWrapper() {
+<span class="fc" id="L126">    return (Boolean) value;</span>
+  }
+
+  /**
+   * convenience method to get this element as a boolean value.
+   *
+   * @return get this element as a primitive boolean value.
+   */
+  @Override
+  public boolean getAsBoolean() {
+<span class="fc bfc" id="L136" title="All 2 branches covered.">    if (isBoolean()) {</span>
+<span class="fc" id="L137">      return getAsBooleanWrapper().booleanValue();</span>
+    } else {
+      // Check to see if the value as a String is &quot;true&quot; in any case.
+<span class="fc" id="L140">      return Boolean.parseBoolean(getAsString());</span>
+    }
+  }
+
+  /**
+   * Check whether this primitive contains a Number.
+   *
+   * @return true if this primitive contains a Number, false otherwise.
+   */
+  public boolean isNumber() {
+<span class="fc" id="L150">    return value instanceof Number;</span>
+  }
+
+  /**
+   * convenience method to get this element as a Number.
+   *
+   * @return get this element as a Number.
+   * @throws NumberFormatException if the value contained is not a valid Number.
+   */
+  @Override
+  public Number getAsNumber() {
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">    return value instanceof String ? new LazilyParsedNumber((String) value) : (Number) value;</span>
+  }
+
+  /**
+   * Check whether this primitive contains a String value.
+   *
+   * @return true if this primitive contains a String value, false otherwise.
+   */
+  public boolean isString() {
+<span class="fc" id="L170">    return value instanceof String;</span>
+  }
+
+  /**
+   * convenience method to get this element as a String.
+   *
+   * @return get this element as a String.
+   */
+  @Override
+  public String getAsString() {
+<span class="fc bfc" id="L180" title="All 2 branches covered.">    if (isNumber()) {</span>
+<span class="fc" id="L181">      return getAsNumber().toString();</span>
+<span class="pc bpc" id="L182" title="1 of 2 branches missed.">    } else if (isBoolean()) {</span>
+<span class="nc" id="L183">      return getAsBooleanWrapper().toString();</span>
+    } else {
+<span class="fc" id="L185">      return (String) value;</span>
+    }
+  }
+
+  /**
+   * convenience method to get this element as a primitive double.
+   *
+   * @return get this element as a primitive double.
+   * @throws NumberFormatException if the value contained is not a valid double.
+   */
+  @Override
+  public double getAsDouble() {
+<span class="fc bfc" id="L197" title="All 2 branches covered.">    return isNumber() ? getAsNumber().doubleValue() : Double.parseDouble(getAsString());</span>
+  }
+
+  /**
+   * convenience method to get this element as a {@link BigDecimal}.
+   *
+   * @return get this element as a {@link BigDecimal}.
+   * @throws NumberFormatException if the value contained is not a valid {@link BigDecimal}.
+   */
+  @Override
+  public BigDecimal getAsBigDecimal() {
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">    return value instanceof BigDecimal ? (BigDecimal) value : new BigDecimal(value.toString());</span>
+  }
+
+  /**
+   * convenience method to get this element as a {@link BigInteger}.
+   *
+   * @return get this element as a {@link BigInteger}.
+   * @throws NumberFormatException if the value contained is not a valid {@link BigInteger}.
+   */
+  @Override
+  public BigInteger getAsBigInteger() {
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">    return value instanceof BigInteger ?</span>
+<span class="fc" id="L220">        (BigInteger) value : new BigInteger(value.toString());</span>
+  }
+
+  /**
+   * convenience method to get this element as a float.
+   *
+   * @return get this element as a float.
+   * @throws NumberFormatException if the value contained is not a valid float.
+   */
+  @Override
+  public float getAsFloat() {
+<span class="pc bpc" id="L231" title="1 of 2 branches missed.">    return isNumber() ? getAsNumber().floatValue() : Float.parseFloat(getAsString());</span>
+  }
+
+  /**
+   * convenience method to get this element as a primitive long.
+   *
+   * @return get this element as a primitive long.
+   * @throws NumberFormatException if the value contained is not a valid long.
+   */
+  @Override
+  public long getAsLong() {
+<span class="fc bfc" id="L242" title="All 2 branches covered.">    return isNumber() ? getAsNumber().longValue() : Long.parseLong(getAsString());</span>
+  }
+
+  /**
+   * convenience method to get this element as a primitive short.
+   *
+   * @return get this element as a primitive short.
+   * @throws NumberFormatException if the value contained is not a valid short value.
+   */
+  @Override
+  public short getAsShort() {
+<span class="pc bpc" id="L253" title="1 of 2 branches missed.">    return isNumber() ? getAsNumber().shortValue() : Short.parseShort(getAsString());</span>
+  }
+
+ /**
+  * convenience method to get this element as a primitive integer.
+  *
+  * @return get this element as a primitive integer.
+  * @throws NumberFormatException if the value contained is not a valid integer.
+  */
+  @Override
+  public int getAsInt() {
+<span class="fc bfc" id="L264" title="All 2 branches covered.">    return isNumber() ? getAsNumber().intValue() : Integer.parseInt(getAsString());</span>
+  }
+
+  @Override
+  public byte getAsByte() {
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">    return isNumber() ? getAsNumber().byteValue() : Byte.parseByte(getAsString());</span>
+  }
+
+  @Override
+  public char getAsCharacter() {
+<span class="fc" id="L274">    return getAsString().charAt(0);</span>
+  }
+
+  private static boolean isPrimitiveOrString(Object target) {
+<span class="fc bfc" id="L278" title="All 2 branches covered.">    if (target instanceof String) {</span>
+<span class="fc" id="L279">      return true;</span>
+    }
+
+<span class="fc" id="L282">    Class&lt;?&gt; classOfPrimitive = target.getClass();</span>
+<span class="pc bpc" id="L283" title="1 of 2 branches missed.">    for (Class&lt;?&gt; standardPrimitive : PRIMITIVE_TYPES) {</span>
+<span class="fc bfc" id="L284" title="All 2 branches covered.">      if (standardPrimitive.isAssignableFrom(classOfPrimitive)) {</span>
+<span class="fc" id="L285">        return true;</span>
+      }
+    }
+<span class="nc" id="L288">    return false;</span>
+  }
+
+  @Override
+  public int hashCode() {
+<span class="pc bpc" id="L293" title="1 of 2 branches missed.">    if (value == null) {</span>
+<span class="nc" id="L294">      return 31;</span>
+    }
+    // Using recommended hashing algorithm from Effective Java for longs and doubles
+<span class="fc bfc" id="L297" title="All 2 branches covered.">    if (isIntegral(this)) {</span>
+<span class="fc" id="L298">      long value = getAsNumber().longValue();</span>
+<span class="fc" id="L299">      return (int) (value ^ (value &gt;&gt;&gt; 32));</span>
+    }
+<span class="fc bfc" id="L301" title="All 2 branches covered.">    if (value instanceof Number) {</span>
+<span class="fc" id="L302">      long value = Double.doubleToLongBits(getAsNumber().doubleValue());</span>
+<span class="fc" id="L303">      return (int) (value ^ (value &gt;&gt;&gt; 32));</span>
+    }
+<span class="fc" id="L305">    return value.hashCode();</span>
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+<span class="fc bfc" id="L310" title="All 2 branches covered.">    if (this == obj) {</span>
+<span class="fc" id="L311">      return true;</span>
+    }
+<span class="fc bfc" id="L313" title="All 4 branches covered.">    if (obj == null || getClass() != obj.getClass()) {</span>
+<span class="fc" id="L314">      return false;</span>
+    }
+<span class="fc" id="L316">    JsonPrimitive other = (JsonPrimitive)obj;</span>
+<span class="pc bpc" id="L317" title="1 of 2 branches missed.">    if (value == null) {</span>
+<span class="nc bnc" id="L318" title="All 2 branches missed.">      return other.value == null;</span>
+    }
+<span class="fc bfc" id="L320" title="All 4 branches covered.">    if (isIntegral(this) &amp;&amp; isIntegral(other)) {</span>
+<span class="fc bfc" id="L321" title="All 2 branches covered.">      return getAsNumber().longValue() == other.getAsNumber().longValue();</span>
+    }
+<span class="fc bfc" id="L323" title="All 4 branches covered.">    if (value instanceof Number &amp;&amp; other.value instanceof Number) {</span>
+<span class="fc" id="L324">      double a = getAsNumber().doubleValue();</span>
+      // Java standard types other than double return true for two NaN. So, need
+      // special handling for double.
+<span class="fc" id="L327">      double b = other.getAsNumber().doubleValue();</span>
+<span class="pc bpc" id="L328" title="2 of 6 branches missed.">      return a == b || (Double.isNaN(a) &amp;&amp; Double.isNaN(b));</span>
+    }
+<span class="fc" id="L330">    return value.equals(other.value);</span>
+  }
+
+  /**
+   * Returns true if the specified number is an integral type
+   * (Long, Integer, Short, Byte, BigInteger)
+   */
+  private static boolean isIntegral(JsonPrimitive primitive) {
+<span class="fc bfc" id="L338" title="All 2 branches covered.">    if (primitive.value instanceof Number) {</span>
+<span class="fc" id="L339">      Number number = (Number) primitive.value;</span>
+<span class="fc bfc" id="L340" title="All 10 branches covered.">      return number instanceof BigInteger || number instanceof Long || number instanceof Integer</span>
+          || number instanceof Short || number instanceof Byte;
+    }
+<span class="fc" id="L343">    return false;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Primitives.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Gson</a> &gt; <a href="index.source.html" class="el_package">com.google.gson.internal</a> &gt; <span class="el_source">Primitives.java</span></div><h1>Primitives.java</h1><pre class="source lang-java linenums">/*
+ * Copyright (C) 2008 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.google.gson.internal;
+
+
+import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Contains static utility methods pertaining to primitive types and their
+ * corresponding wrapper types.
+ *
+ * @author Kevin Bourrillion
+ */
+public final class Primitives {
+<span class="nc" id="L32">  private Primitives() {</span>
+<span class="nc" id="L33">    throw new UnsupportedOperationException();</span>
+  }
+
+  /** A map from primitive types to their corresponding wrapper types. */
+  private static final Map&lt;Class&lt;?&gt;, Class&lt;?&gt;&gt; PRIMITIVE_TO_WRAPPER_TYPE;
+
+  /** A map from wrapper types to their corresponding primitive types. */
+  private static final Map&lt;Class&lt;?&gt;, Class&lt;?&gt;&gt; WRAPPER_TO_PRIMITIVE_TYPE;
+
+  // Sad that we can't use a BiMap. :(
+
+  static {
+<span class="fc" id="L45">    Map&lt;Class&lt;?&gt;, Class&lt;?&gt;&gt; primToWrap = new HashMap&lt;Class&lt;?&gt;, Class&lt;?&gt;&gt;(16);</span>
+<span class="fc" id="L46">    Map&lt;Class&lt;?&gt;, Class&lt;?&gt;&gt; wrapToPrim = new HashMap&lt;Class&lt;?&gt;, Class&lt;?&gt;&gt;(16);</span>
+
+<span class="fc" id="L48">    add(primToWrap, wrapToPrim, boolean.class, Boolean.class);</span>
+<span class="fc" id="L49">    add(primToWrap, wrapToPrim, byte.class, Byte.class);</span>
+<span class="fc" id="L50">    add(primToWrap, wrapToPrim, char.class, Character.class);</span>
+<span class="fc" id="L51">    add(primToWrap, wrapToPrim, double.class, Double.class);</span>
+<span class="fc" id="L52">    add(primToWrap, wrapToPrim, float.class, Float.class);</span>
+<span class="fc" id="L53">    add(primToWrap, wrapToPrim, int.class, Integer.class);</span>
+<span class="fc" id="L54">    add(primToWrap, wrapToPrim, long.class, Long.class);</span>
+<span class="fc" id="L55">    add(primToWrap, wrapToPrim, short.class, Short.class);</span>
+<span class="fc" id="L56">    add(primToWrap, wrapToPrim, void.class, Void.class);</span>
+
+<span class="fc" id="L58">    PRIMITIVE_TO_WRAPPER_TYPE = Collections.unmodifiableMap(primToWrap);</span>
+<span class="fc" id="L59">    WRAPPER_TO_PRIMITIVE_TYPE = Collections.unmodifiableMap(wrapToPrim);</span>
+<span class="fc" id="L60">  }</span>
+
+  private static void add(Map&lt;Class&lt;?&gt;, Class&lt;?&gt;&gt; forward,
+      Map&lt;Class&lt;?&gt;, Class&lt;?&gt;&gt; backward, Class&lt;?&gt; key, Class&lt;?&gt; value) {
+<span class="fc" id="L64">    forward.put(key, value);</span>
+<span class="fc" id="L65">    backward.put(value, key);</span>
+<span class="fc" id="L66">  }</span>
+
+  /**
+   * Returns true if this type is a primitive.
+   */
+  public static boolean isPrimitive(Type type) {
+<span class="fc" id="L72">    return PRIMITIVE_TO_WRAPPER_TYPE.containsKey(type);</span>
+  }
+
+  /**
+   * Returns {@code true} if {@code type} is one of the nine
+   * primitive-wrapper types, such as {@link Integer}.
+   *
+   * @see Class#isPrimitive
+   */
+  public static boolean isWrapperType(Type type) {
+<span class="fc" id="L82">    return WRAPPER_TO_PRIMITIVE_TYPE.containsKey(</span>
+<span class="fc" id="L83">        $Gson$Preconditions.checkNotNull(type));</span>
+  }
+
+  /**
+   * Returns the corresponding wrapper type of {@code type} if it is a primitive
+   * type; otherwise returns {@code type} itself. Idempotent.
+   * &lt;pre&gt;
+   *     wrap(int.class) == Integer.class
+   *     wrap(Integer.class) == Integer.class
+   *     wrap(String.class) == String.class
+   * &lt;/pre&gt;
+   */
+  public static &lt;T&gt; Class&lt;T&gt; wrap(Class&lt;T&gt; type) {
+    // cast is safe: long.class and Long.class are both of type Class&lt;Long&gt;
+    @SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L98">    Class&lt;T&gt; wrapped = (Class&lt;T&gt;) PRIMITIVE_TO_WRAPPER_TYPE.get(</span>
+<span class="fc" id="L99">        $Gson$Preconditions.checkNotNull(type));</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">    return (wrapped == null) ? type : wrapped;</span>
+  }
+
+  /**
+   * Returns the corresponding primitive type of {@code type} if it is a
+   * wrapper type; otherwise returns {@code type} itself. Idempotent.
+   * &lt;pre&gt;
+   *     unwrap(Integer.class) == int.class
+   *     unwrap(int.class) == int.class
+   *     unwrap(String.class) == String.class
+   * &lt;/pre&gt;
+   */
+  public static &lt;T&gt; Class&lt;T&gt; unwrap(Class&lt;T&gt; type) {
+    // cast is safe: long.class and Long.class are both of type Class&lt;Long&gt;
+    @SuppressWarnings(&quot;unchecked&quot;)
+<span class="fc" id="L115">    Class&lt;T&gt; unwrapped = (Class&lt;T&gt;) WRAPPER_TO_PRIMITIVE_TYPE.get(</span>
+<span class="fc" id="L116">        $Gson$Preconditions.checkNotNull(type));</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">    return (unwrapped == null) ? type : unwrapped;</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
